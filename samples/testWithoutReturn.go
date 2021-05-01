@@ -21,6 +21,6 @@ type Test struct {
 	
 }
 
-func (t *Test) add(a int, b int, c int, d int) (int, uint) {
+func (t *Test) add(a int, b int, c int, d int) {
 	
 }

@@ -11,10 +11,15 @@ type Param struct {
 	Name string
 }
 
+type ReturnValue struct {
+	Type string
+}
+
 type Method struct {
-	Name     string
-	Params   []Param
-	Receiver string
+	Name         string
+	Params       []Param
+	Receiver     string
+	ReturnValues []ReturnValue
 }
 
 func (m *Method) getStructName() string {
@@ -63,17 +68,24 @@ func (m *Method) getFinalImplementation(file *File) {
 	for _, paramOfMethod := range m.Params {
 		params = append(params, Id("t").Dot(paramOfMethod.Name))
 	}
+
+	retValues := []Code{}
+	for _, retValue := range m.ReturnValues {
+		retValues = append(retValues, Id(retValue.Type))
+	}
 	if m.hasReceiver() {
 		file.Func().Params(Id("t").Id("*" + m.getStructName())).Id(strings.Title(m.Name)).
-			Params().
-			Block(
-				Id("t").Dot("t").Dot(m.Name).Call(params...),
-			)
+				Params().
+				Parens(List(retValues...)).
+				Block(
+					Return(Id("t").Dot("t").Dot(m.Name).Call(params...)),
+				)
 	} else {
 		file.Func().Params(Id("t").Id("*" + m.getStructName())).Id(strings.Title(m.Name)).
 			Params().
+			Parens(List(retValues...)).
 			Block(
-				Id(m.Name).Call(params...),
+				Return(Id(m.Name).Call(params...)),
 			)
 	}
 }
