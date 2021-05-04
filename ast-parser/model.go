@@ -46,8 +46,16 @@ func (m *Method) GetNextInterface(offset int) string {
 	}
 }
 
+func (m *Method) getReturnValues() []Code {
+	retValues := []Code{}
+	for _, retValue := range m.ReturnValues {
+		retValues = append(retValues, Id(retValue.Type))
+	}
+	return retValues
+}
+
 func (m *Method) genFinalInterface(file *File) {
-	file.Type().Id(strings.Title(m.Name)).Interface(Id(strings.Title(m.Name)).Params()).GoString()
+	file.Type().Id(strings.Title(m.Name)).Interface(Id(strings.Title(m.Name)).Params().List(m.getReturnValues()...))
 }
 
 func (m *Method) hasReceiver() bool {
@@ -69,21 +77,17 @@ func (m *Method) getFinalImplementation(file *File) {
 		params = append(params, Id("t").Dot(paramOfMethod.Name))
 	}
 
-	retValues := []Code{}
-	for _, retValue := range m.ReturnValues {
-		retValues = append(retValues, Id(retValue.Type))
-	}
 	if m.hasReceiver() {
 		file.Func().Params(Id("t").Id("*" + m.getStructName())).Id(strings.Title(m.Name)).
-				Params().
-				Parens(List(retValues...)).
-				Block(
-					Return(Id("t").Dot("t").Dot(m.Name).Call(params...)),
-				)
+			Params().
+			Parens(List(m.getReturnValues()...)).
+			Block(
+				Return(Id("t").Dot("t").Dot(m.Name).Call(params...)),
+			)
 	} else {
 		file.Func().Params(Id("t").Id("*" + m.getStructName())).Id(strings.Title(m.Name)).
 			Params().
-			Parens(List(retValues...)).
+			Parens(List(m.getReturnValues()...)).
 			Block(
 				Return(Id(m.Name).Call(params...)),
 			)
@@ -135,6 +139,6 @@ func (m *Method) getParameters() []Code {
 func (m *Method) GetInterfaceContract(file *File) {
 	if m.hasReceiver() {
 		parameters := m.getParameters()
-		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...))
+		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...).List(m.getReturnValues()...))
 	}
 }
