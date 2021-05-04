@@ -135,6 +135,6 @@ func (m *Method) getParameters() []Code {
 func (m *Method) GetInterfaceContract(file *File) {
 	if m.hasReceiver() {
 		parameters := m.getParameters()
-		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...)).GoString()
+		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...))
 	}
 }
