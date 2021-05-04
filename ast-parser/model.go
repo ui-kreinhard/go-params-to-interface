@@ -111,12 +111,13 @@ func (m *Method) GetEntryMethod(file *File) {
 				Id("ret").Dot("t").Op("=").Id("t"),
 				Return().Id("&ret"),
 			)
+	} else {
+		file.Func().Id("With"+strings.Title(m.Name)).Params().Id(strings.Title(m.Params[0].Name)).
+			Block(
+				Id("ret").Op(":=").Id(m.getStructName()).Block(),
+				Return().Id("&ret"),
+			)
 	}
-	file.Func().Id("With"+strings.Title(m.Name)).Params().Id(strings.Title(m.Params[0].Name)).
-		Block(
-			Id("ret").Op(":=").Id(m.getStructName()).Block(),
-			Return().Id("&ret"),
-		)
 }
 
 func (m *Method) getInterfaceContractName() string {
