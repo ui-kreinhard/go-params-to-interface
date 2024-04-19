@@ -55,7 +55,7 @@ func (m *Method) getReturnValues() []Code {
 }
 
 func (m *Method) genFinalInterface(file *File) {
-	file.Type().Id(strings.Title(m.Name)).Interface(Id(strings.Title(m.Name)).Params().List(m.getReturnValues()...))
+	file.Type().Id(strings.Title(m.Name)).Interface(Id(strings.Title(m.Name)).Params().Parens(List(m.getReturnValues()...)))
 }
 
 func (m *Method) hasReceiver() bool {
@@ -65,7 +65,7 @@ func (m *Method) hasReceiver() bool {
 func (m *Method) GetInterfaces(file *File) {
 	for i, param := range m.Params {
 		file.Type().Id(strings.Title(param.Name)).Interface(
-			Id("With" + strings.Title(param.Name)).Params(Id(param.Name).Id(param.Type)).Id(m.GetNextInterface(i)),
+			Id(strings.Title(param.Name)).Params(Id(param.Name).Id(param.Type)).Id(m.GetNextInterface(i)),
 		)
 	}
 	m.genFinalInterface(file)
@@ -96,7 +96,7 @@ func (m *Method) getFinalImplementation(file *File) {
 
 func (m *Method) GetImplementations(file *File) {
 	for i, param := range m.Params {
-		file.Func().Params(Id("t").Id("*"+m.getStructName())).Id("With"+strings.Title(param.Name)).
+		file.Func().Params(Id("t").Id("*"+m.getStructName())).Id(strings.Title(param.Name)).
 			Params(Id(param.Name).Id(param.Type)).
 			Id(m.GetNextInterface(i)).Block(
 			Id("t."+param.Name).Op("=").Id(param.Name),
@@ -116,7 +116,7 @@ func (m *Method) GetEntryMethod(file *File) {
 				Return().Id("&ret"),
 			)
 	} else {
-		file.Func().Id("With"+strings.Title(m.Name)).Params().Id(strings.Title(m.Params[0].Name)).
+		file.Func().Id(strings.Title(m.Name)).Params().Id(strings.Title(m.Params[0].Name)).
 			Block(
 				Id("ret").Op(":=").Id(m.getStructName()).Block(),
 				Return().Id("&ret"),
@@ -139,6 +139,6 @@ func (m *Method) getParameters() []Code {
 func (m *Method) GetInterfaceContract(file *File) {
 	if m.hasReceiver() {
 		parameters := m.getParameters()
-		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...).List(m.getReturnValues()...))
+		file.Type().Id(m.getInterfaceContractName()).Interface(Id(m.Name).Params(parameters...).Parens(List(m.getReturnValues()...)))
 	}
 }
